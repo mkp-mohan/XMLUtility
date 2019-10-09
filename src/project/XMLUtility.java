@@ -16,6 +16,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.stream.Collectors;
 
 public class XMLUtility {
 
@@ -55,11 +56,14 @@ public class XMLUtility {
 
 		try (BufferedReader pol_numbers = new BufferedReader(new FileReader(csvInputFile));) {
 
-			String polNumbersInput = null;
+			String polNumbersInput = "";
+			String strCurrentLine;
+			while (( strCurrentLine = pol_numbers.readLine()) != null) {
+				polNumbersInput =polNumbersInput.concat(strCurrentLine);
+			}
+			
 
-			polNumbersInput = pol_numbers.readLine();
-
-			requestedNo = new ArrayList<>(Arrays.asList(polNumbersInput.split(",")));
+			requestedNo = new ArrayList<>(Arrays.asList(polNumbersInput.toString().split(",")));
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -68,18 +72,18 @@ public class XMLUtility {
 
 	}
 
-	public ArrayList<String> filterXML(String inputXML, ArrayList<String> inputPolNumbers) {
+	public void filterXML(String inputXML, ArrayList<String> inputPolNumbers, String outputFileName) {
 		boolean toPrint = false;
 		boolean client_required = false;
 		XMLStreamWriter streamWriter;
-		ArrayList<String> foundPol = new ArrayList<>();
+		
 
 		try (PrintWriter writeClientRef = new PrintWriter(new File("client-numbers.csv"));) {
 
 			XMLInputFactory factory = XMLInputFactory.newInstance();
 			XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
 			XMLStreamReader eventReader = factory.createXMLStreamReader(inputXML, new FileInputStream(inputXML));
-			streamWriter = outputFactory.createXMLStreamWriter(new FileOutputStream("output.xml"));
+			streamWriter = outputFactory.createXMLStreamWriter(new FileOutputStream(outputFileName));
 			streamWriter.writeStartDocument();
 			streamWriter.writeCharacters("\n");
 
@@ -94,6 +98,12 @@ public class XMLUtility {
 					if (qName.equalsIgnoreCase("UICSLoadRequestList")) {
 						streamWriter.writeDTD(startElement.toString());
 						streamWriter.writeCharacters("\n");
+						if(startElement.contains("LSTSchema")) {
+							XMLUtility.type = "JUICE";
+						}else {
+							XMLUtility.type = "PDG";
+						}
+							
 					}
 					/*
 					 * if (qName.equalsIgnoreCase("UICSLoadRequestList")) {
@@ -124,10 +134,10 @@ public class XMLUtility {
 						String tempPolicyNum = eventReader.getAttributeValue("", "id");
 						if (inputPolNumbers.contains(tempPolicyNum)) {
 							toPrint = true;
-							foundPol.add(tempPolicyNum);
+							
 
 						}
-						XMLUtility.type = eventReader.getAttributeValue("", "type");
+						
 
 					}
 
@@ -156,11 +166,12 @@ public class XMLUtility {
 						if (qNames.equalsIgnoreCase("UICSLoadRequest")) {
 							streamWriter.writeCharacters("\n");
 							toPrint = false;
+							writeClientRef.write("\n");
 						}
 
 					}
 					if (qNames.equalsIgnoreCase("clientRef")) {
-						client_required = false;
+						client_required = false;						
 					}
 
 					break;
@@ -172,8 +183,9 @@ public class XMLUtility {
 			streamWriter.writeDTD("</UICSLoadRequestList>");
 			streamWriter.flush();
 			streamWriter.close();
-			writeClientRef.flush();
-			writeClientRef.close();
+		
+			//writeClientRef.flush();
+			//writeClientRef.close();
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -181,7 +193,96 @@ public class XMLUtility {
 			e.printStackTrace();
 		}
 
-		return foundPol;
+		
+	}
+
+	public void filterPDGXML(String inputXML, ArrayList<String> inputPolNumbers, String outputFileName) {
+		boolean toPrint = false;
+		
+		XMLStreamWriter streamWriter;
+		
+
+		try  {
+
+			XMLInputFactory factory = XMLInputFactory.newInstance();
+			XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
+			XMLStreamReader eventReader = factory.createXMLStreamReader(inputXML, new FileInputStream(inputXML));
+			streamWriter = outputFactory.createXMLStreamWriter(new FileOutputStream(outputFileName));
+			streamWriter.writeStartDocument();
+			streamWriter.writeCharacters("\n");
+
+			
+			while (eventReader.hasNext()) {
+				int eventType = eventReader.next();
+
+				switch (eventType) {
+				case XMLEvent.START_ELEMENT:
+					String startElement = getWholeTag(eventReader);
+					String qName = eventReader.getLocalName();
+					if (qName.equalsIgnoreCase("UICSLoadRequestList")) {
+						streamWriter.writeDTD(startElement.toString());
+						streamWriter.writeCharacters("\n");
+						
+							
+					}
+					
+
+					if (qName.equalsIgnoreCase("UICSLoadRequest")) {
+						String tempPolicyNum = eventReader.getAttributeValue("", "id");
+						if (inputPolNumbers.contains(tempPolicyNum)) {
+							toPrint = true;
+							
+
+						}
+						
+
+					}
+
+					if (toPrint) {
+						streamWriter.writeDTD(startElement.toString());
+					}
+
+					break;
+				case XMLStreamConstants.CHARACTERS:
+					if (toPrint) {
+						streamWriter.writeDTD(eventReader.getText());
+					}
+					
+					break;
+				case XMLStreamConstants.END_ELEMENT:
+					String endElement = "</" + eventReader.getLocalName() + ">";
+					String qNames = eventReader.getLocalName();
+					if (toPrint) {
+
+						streamWriter.writeDTD(endElement);
+						if (qNames.equalsIgnoreCase("UICSLoadRequest")) {
+							streamWriter.writeCharacters("\n");
+							toPrint = false;
+							
+						}
+
+					}
+					
+					break;
+				case XMLStreamConstants.NAMESPACE:
+					System.out.println("I am here");
+					break;
+				}
+			}
+			streamWriter.writeDTD("</UICSLoadRequestList>");
+			streamWriter.flush();
+			streamWriter.close();
+		
+			//writeClientRef.flush();
+			//writeClientRef.close();
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (XMLStreamException e) {
+			e.printStackTrace();
+		}
+
+		
 	}
 
 	public String getWholeTag(XMLStreamReader eventReader) {
@@ -194,7 +295,7 @@ public class XMLUtility {
 		startElement.append(qName);
 
 		if (eventReader.getNamespaceCount() != 0) {
-
+			startElement.append(" ");
 			for (int i = 0; i < eventReader.getNamespaceCount(); i++) {
 				startElement.append("xmlns:" + eventReader.getNamespacePrefix(i));
 				startElement.append("= \"" + eventReader.getNamespaceURI(i) + "\" ");
@@ -222,7 +323,8 @@ public class XMLUtility {
 	}
 
 	public void extractClientData(ArrayList<String> clientList, String filePath) {
-
+		clientList = (ArrayList<String>) clientList.stream().distinct().collect(Collectors.toList());
+		
 		try (BufferedReader eslReader = new BufferedReader(new FileReader(filePath));
 				BufferedWriter clientWriter = new BufferedWriter(new FileWriter("ets-client-extract.csv"))) {
 			ClientSchema objClientSchema = new ClientSchema();
@@ -232,7 +334,8 @@ public class XMLUtility {
 			}
 			clientWriter.newLine();
 			for (String line = null; (line = eslReader.readLine()) != null;) {
-				if (clientList.contains(removeZero(line.substring(601, 610)))) {
+				
+				if (clientList.contains(line.substring(601, 610))) {
 					for (Iterator<ClientSchema> iterator = lstClientSchema.iterator(); iterator.hasNext();) {
 						ClientSchema temp = iterator.next();
 						clientWriter.write(line.substring(temp.startIndex, temp.endIndex) + ",");
@@ -260,5 +363,34 @@ public class XMLUtility {
 		sb.replace(0, i, "");
 
 		return sb.toString();
+	}
+	
+	public ArrayList<String> searchPolicies(String inputXML, ArrayList<String> inputPolNumbers) {
+		ArrayList<String> foundPol = new ArrayList<String>();
+		
+		try {
+		    XMLInputFactory factory = XMLInputFactory.newInstance();		
+			XMLStreamReader eventReader = factory.createXMLStreamReader(inputXML, new FileInputStream(inputXML));
+			while (eventReader.hasNext()) {
+				int eventType = eventReader.next();
+
+				switch (eventType) {
+				case XMLEvent.START_ELEMENT:
+					String qName = eventReader.getLocalName();
+					if (qName.equalsIgnoreCase("UICSLoadRequest")) {
+						String tempPolicyNum = eventReader.getAttributeValue("", "id");
+						if (inputPolNumbers.contains(tempPolicyNum)) {							
+							foundPol.add(tempPolicyNum);
+						}
+					}					
+				}
+			}
+			
+		} catch (FileNotFoundException | XMLStreamException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return foundPol;
 	}
 }
