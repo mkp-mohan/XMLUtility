@@ -75,15 +75,18 @@ public class XMLUtility {
 	public void filterXML(String inputXML, ArrayList<String> inputPolNumbers, String outputFileName) {
 		boolean toPrint = false;
 		boolean client_required = false;
-		XMLStreamWriter streamWriter;
+		
 		
 
-		try (PrintWriter writeClientRef = new PrintWriter(new File("client-numbers.csv"));) {
+		try (PrintWriter writeClientRef = new PrintWriter(new File("client-numbers.csv"));
+				FileOutputStream fileOutPut = new FileOutputStream(outputFileName);) {
 
 			XMLInputFactory factory = XMLInputFactory.newInstance();
 			XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
 			XMLStreamReader eventReader = factory.createXMLStreamReader(inputXML, new FileInputStream(inputXML));
-			streamWriter = outputFactory.createXMLStreamWriter(new FileOutputStream(outputFileName));
+			XMLStreamWriter streamWriter;
+						
+			streamWriter = outputFactory.createXMLStreamWriter(fileOutPut);
 			streamWriter.writeStartDocument();
 			streamWriter.writeCharacters("\n");
 
@@ -183,13 +186,16 @@ public class XMLUtility {
 			streamWriter.writeDTD("</UICSLoadRequestList>");
 			streamWriter.flush();
 			streamWriter.close();
-		
+			
 			//writeClientRef.flush();
 			//writeClientRef.close();
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (XMLStreamException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -199,15 +205,16 @@ public class XMLUtility {
 	public void filterPDGXML(String inputXML, ArrayList<String> inputPolNumbers, String outputFileName) {
 		boolean toPrint = false;
 		
-		XMLStreamWriter streamWriter;
+		
 		
 
-		try  {
-
+		try(FileOutputStream fileOutput = new FileOutputStream(outputFileName);)  {
+			XMLStreamWriter streamWriter ;
 			XMLInputFactory factory = XMLInputFactory.newInstance();
 			XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
 			XMLStreamReader eventReader = factory.createXMLStreamReader(inputXML, new FileInputStream(inputXML));
-			streamWriter = outputFactory.createXMLStreamWriter(new FileOutputStream(outputFileName));
+			//FileOutputStream fileOutput = new FileOutputStream(outputFileName);
+			streamWriter = outputFactory.createXMLStreamWriter(fileOutput);
 			streamWriter.writeStartDocument();
 			streamWriter.writeCharacters("\n");
 
@@ -244,7 +251,7 @@ public class XMLUtility {
 
 					break;
 				case XMLStreamConstants.CHARACTERS:
-					if (toPrint) {
+					if (toPrint) {						
 						streamWriter.writeDTD(eventReader.getText());
 					}
 					
@@ -272,7 +279,7 @@ public class XMLUtility {
 			streamWriter.writeDTD("</UICSLoadRequestList>");
 			streamWriter.flush();
 			streamWriter.close();
-		
+			//fileOutput.close();
 			//writeClientRef.flush();
 			//writeClientRef.close();
 
@@ -280,6 +287,9 @@ public class XMLUtility {
 			e.printStackTrace();
 		} catch (XMLStreamException e) {
 			e.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 
 		
@@ -340,9 +350,9 @@ public class XMLUtility {
 						ClientSchema temp = iterator.next();
 						clientWriter.write(line.substring(temp.startIndex, temp.endIndex) + ",");
 					}
-
+					clientWriter.newLine();
 				}
-				clientWriter.newLine();
+				
 			}
 			System.out.println("Client details are succefully extracted from RSL extract");
 

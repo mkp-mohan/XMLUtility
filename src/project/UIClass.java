@@ -11,13 +11,13 @@ import java.util.Arrays;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
@@ -54,7 +54,7 @@ public class UIClass implements ActionListener {
 	JFileChooser fileTxt;
 	JCheckBox chkRSL;
 	JCheckBox chkPDG;
-	JProgressBar progressBar;
+	JLabel progressBar;
 	
 	public UIClass() {
 		frameMain = new JFrame("NN-Test Data Utility");
@@ -103,9 +103,10 @@ public class UIClass implements ActionListener {
 		panelRSL.add(fieldRSLExtract);
 		panelRSL.add(btnTxtUpload);
 		panelRSL.setVisible(false);
-		
+		ImageIcon icon = new ImageIcon(getClass().getResource("progress.gif"));
 		btnExtract = new JButton("Filter and Extract data");
-		
+		progressBar = new JLabel(icon);
+		progressBar.setVisible(false);
 		
 
 		panelResult = new JPanel();
@@ -132,13 +133,14 @@ public class UIClass implements ActionListener {
 		panel.add(panelRSL);
 		panel.add(Box.createRigidArea(new Dimension(0, 10)));
 		panel.add(btnExtract);
-		panel.add(Box.createRigidArea(new Dimension(0, 10)));		
+		panel.add(Box.createRigidArea(new Dimension(0, 10)));
+		panel.add(progressBar);
+		panel.add(Box.createRigidArea(new Dimension(0, 10)));
 		panel.add(panelResult);
 		panel.add(Box.createRigidArea(new Dimension(0, 10)));
 		
 	
-		frameMain.add(panel);
-		
+		frameMain.add(panel);		
 		frameMain.setVisible(true);
 		frameMain.setSize(900, 750);
 		frameMain.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -150,7 +152,7 @@ public class UIClass implements ActionListener {
 		chkPDG.addActionListener(this);
 		btnExtract.addActionListener(this);
 		
-
+		
 	}
 
 	public static void main(String[] args) {
@@ -255,10 +257,8 @@ public class UIClass implements ActionListener {
 					panelInputXML.setBackground(null);
 					panelInputPolNumbers.setBackground(null);
 					panelRSL.setBackground(null);
-					progressBar = new JProgressBar();								        
-			        progressBar.setIndeterminate(true);
-			        panel.add(progressBar);
-			        
+					progressBar.setVisible(true);
+																	        
 					ArrayList<String> inputPolNum = new ArrayList<>(
 							Arrays.asList(fieldPolNumbers.getText().split(",")));
 					ArrayList<String> tempInputPolNum = new ArrayList<>(
@@ -318,7 +318,7 @@ public class UIClass implements ActionListener {
 				
 				result.append(e.getMessage());
 				result.append("\n" + e.getStackTrace().toString());
-				throw e;
+			
 			
 
 			} finally {
