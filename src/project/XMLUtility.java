@@ -20,8 +20,6 @@ import java.util.stream.Collectors;
 
 public class XMLUtility {
 
-
-
 	static String type;
 
 	/*
@@ -58,10 +56,9 @@ public class XMLUtility {
 
 			String polNumbersInput = "";
 			String strCurrentLine;
-			while (( strCurrentLine = pol_numbers.readLine()) != null) {
-				polNumbersInput =polNumbersInput.concat(strCurrentLine);
+			while ((strCurrentLine = pol_numbers.readLine()) != null) {
+				polNumbersInput = polNumbersInput.concat(strCurrentLine);
 			}
-			
 
 			requestedNo = new ArrayList<>(Arrays.asList(polNumbersInput.toString().split(",")));
 
@@ -75,8 +72,6 @@ public class XMLUtility {
 	public void filterXML(String inputXML, ArrayList<String> inputPolNumbers, String outputFileName) {
 		boolean toPrint = false;
 		boolean client_required = false;
-		
-		
 
 		try (PrintWriter writeClientRef = new PrintWriter(new File("client-numbers.csv"));
 				FileOutputStream fileOutPut = new FileOutputStream(outputFileName);) {
@@ -85,7 +80,7 @@ public class XMLUtility {
 			XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
 			XMLStreamReader eventReader = factory.createXMLStreamReader(inputXML, new FileInputStream(inputXML));
 			XMLStreamWriter streamWriter;
-						
+
 			streamWriter = outputFactory.createXMLStreamWriter(fileOutPut);
 			streamWriter.writeStartDocument();
 			streamWriter.writeCharacters("\n");
@@ -101,12 +96,12 @@ public class XMLUtility {
 					if (qName.equalsIgnoreCase("UICSLoadRequestList")) {
 						streamWriter.writeDTD(startElement.toString());
 						streamWriter.writeCharacters("\n");
-						if(startElement.contains("LSTSchema")) {
+						if (startElement.contains("LSTSchema")) {
 							XMLUtility.type = "JUICE";
-						}else {
+						} else {
 							XMLUtility.type = "PDG";
 						}
-							
+
 					}
 					/*
 					 * if (qName.equalsIgnoreCase("UICSLoadRequestList")) {
@@ -137,10 +132,8 @@ public class XMLUtility {
 						String tempPolicyNum = eventReader.getAttributeValue("", "id");
 						if (inputPolNumbers.contains(tempPolicyNum)) {
 							toPrint = true;
-							
 
 						}
-						
 
 					}
 
@@ -154,7 +147,8 @@ public class XMLUtility {
 					break;
 				case XMLStreamConstants.CHARACTERS:
 					if (toPrint) {
-						streamWriter.writeDTD(eventReader.getText());
+						streamWriter.writeCharacters(eventReader.getTextCharacters(), eventReader.getTextStart(), eventReader.getTextLength());
+						//streamWriter.writeDTD(eventReader.getText());
 					}
 					if (client_required) {
 						writeClientRef.write(eventReader.getText() + ",");
@@ -174,7 +168,7 @@ public class XMLUtility {
 
 					}
 					if (qNames.equalsIgnoreCase("clientRef")) {
-						client_required = false;						
+						client_required = false;
 					}
 
 					break;
@@ -186,9 +180,9 @@ public class XMLUtility {
 			streamWriter.writeDTD("</UICSLoadRequestList>");
 			streamWriter.flush();
 			streamWriter.close();
-			
-			//writeClientRef.flush();
-			//writeClientRef.close();
+
+			// writeClientRef.flush();
+			// writeClientRef.close();
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -199,26 +193,21 @@ public class XMLUtility {
 			e.printStackTrace();
 		}
 
-		
 	}
 
 	public void filterPDGXML(String inputXML, ArrayList<String> inputPolNumbers, String outputFileName) {
 		boolean toPrint = false;
-		
-		
-		
 
-		try(FileOutputStream fileOutput = new FileOutputStream(outputFileName);)  {
-			XMLStreamWriter streamWriter ;
+		try (FileOutputStream fileOutput = new FileOutputStream(outputFileName);) {
+			XMLStreamWriter streamWriter;
 			XMLInputFactory factory = XMLInputFactory.newInstance();
 			XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
 			XMLStreamReader eventReader = factory.createXMLStreamReader(inputXML, new FileInputStream(inputXML));
-			//FileOutputStream fileOutput = new FileOutputStream(outputFileName);
+			// FileOutputStream fileOutput = new FileOutputStream(outputFileName);
 			streamWriter = outputFactory.createXMLStreamWriter(fileOutput);
 			streamWriter.writeStartDocument();
 			streamWriter.writeCharacters("\n");
 
-			
 			while (eventReader.hasNext()) {
 				int eventType = eventReader.next();
 
@@ -229,19 +218,15 @@ public class XMLUtility {
 					if (qName.equalsIgnoreCase("UICSLoadRequestList")) {
 						streamWriter.writeDTD(startElement.toString());
 						streamWriter.writeCharacters("\n");
-						
-							
+
 					}
-					
 
 					if (qName.equalsIgnoreCase("UICSLoadRequest")) {
 						String tempPolicyNum = eventReader.getAttributeValue("", "id");
 						if (inputPolNumbers.contains(tempPolicyNum)) {
 							toPrint = true;
-							
 
 						}
-						
 
 					}
 
@@ -251,10 +236,11 @@ public class XMLUtility {
 
 					break;
 				case XMLStreamConstants.CHARACTERS:
-					if (toPrint) {						
-						streamWriter.writeDTD(eventReader.getText());
+					if (toPrint) {
+						streamWriter.writeCharacters(eventReader.getTextCharacters(), eventReader.getTextStart(), eventReader.getTextLength());
+						//streamWriter.writeDTD(eventReader.getText());
 					}
-					
+
 					break;
 				case XMLStreamConstants.END_ELEMENT:
 					String endElement = "</" + eventReader.getLocalName() + ">";
@@ -265,11 +251,11 @@ public class XMLUtility {
 						if (qNames.equalsIgnoreCase("UICSLoadRequest")) {
 							streamWriter.writeCharacters("\n");
 							toPrint = false;
-							
+
 						}
 
 					}
-					
+
 					break;
 				case XMLStreamConstants.NAMESPACE:
 					System.out.println("I am here");
@@ -279,9 +265,9 @@ public class XMLUtility {
 			streamWriter.writeDTD("</UICSLoadRequestList>");
 			streamWriter.flush();
 			streamWriter.close();
-			//fileOutput.close();
-			//writeClientRef.flush();
-			//writeClientRef.close();
+			// fileOutput.close();
+			// writeClientRef.flush();
+			// writeClientRef.close();
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -292,7 +278,6 @@ public class XMLUtility {
 			e1.printStackTrace();
 		}
 
-		
 	}
 
 	public String getWholeTag(XMLStreamReader eventReader) {
@@ -334,7 +319,7 @@ public class XMLUtility {
 
 	public void extractClientData(ArrayList<String> clientList, String filePath) {
 		clientList = (ArrayList<String>) clientList.stream().distinct().collect(Collectors.toList());
-		
+
 		try (BufferedReader eslReader = new BufferedReader(new FileReader(filePath));
 				BufferedWriter clientWriter = new BufferedWriter(new FileWriter("ets-client-extract.csv"))) {
 			ClientSchema objClientSchema = new ClientSchema();
@@ -344,7 +329,7 @@ public class XMLUtility {
 			}
 			clientWriter.newLine();
 			for (String line = null; (line = eslReader.readLine()) != null;) {
-				
+
 				if (clientList.contains(line.substring(601, 610))) {
 					for (Iterator<ClientSchema> iterator = lstClientSchema.iterator(); iterator.hasNext();) {
 						ClientSchema temp = iterator.next();
@@ -352,7 +337,7 @@ public class XMLUtility {
 					}
 					clientWriter.newLine();
 				}
-				
+
 			}
 			System.out.println("Client details are succefully extracted from RSL extract");
 
@@ -374,12 +359,12 @@ public class XMLUtility {
 
 		return sb.toString();
 	}
-	
+
 	public ArrayList<String> searchPolicies(String inputXML, ArrayList<String> inputPolNumbers) {
 		ArrayList<String> foundPol = new ArrayList<String>();
-		
+
 		try {
-		    XMLInputFactory factory = XMLInputFactory.newInstance();		
+			XMLInputFactory factory = XMLInputFactory.newInstance();
 			XMLStreamReader eventReader = factory.createXMLStreamReader(inputXML, new FileInputStream(inputXML));
 			while (eventReader.hasNext()) {
 				int eventType = eventReader.next();
@@ -389,18 +374,18 @@ public class XMLUtility {
 					String qName = eventReader.getLocalName();
 					if (qName.equalsIgnoreCase("UICSLoadRequest")) {
 						String tempPolicyNum = eventReader.getAttributeValue("", "id");
-						if (inputPolNumbers.contains(tempPolicyNum)) {							
+						if (inputPolNumbers.contains(tempPolicyNum)) {
 							foundPol.add(tempPolicyNum);
 						}
-					}					
+					}
 				}
 			}
-			
+
 		} catch (FileNotFoundException | XMLStreamException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		return foundPol;
 	}
 }

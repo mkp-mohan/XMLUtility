@@ -49,6 +49,8 @@ public class UIClass implements ActionListener {
 	JPanel panelResult;
 	JPanel panelRSL;
 	JPanel panel;
+	JPanel panelTitle;
+	JLabel title;
 	JFileChooser fileXML;
 	JFileChooser filePDG;
 	JFileChooser fileTxt;
@@ -57,7 +59,19 @@ public class UIClass implements ActionListener {
 	JLabel progressBar;
 	
 	public UIClass() {
-		frameMain = new JFrame("NN-Test Data Utility");
+		frameMain = new JFrame("Infosys-Test Data Utility for NN");
+		
+		title = new JLabel("<html><span style='color: teal;'>Infosys Test Data Extraction tool for NN</span></html>");
+		title.setFont (title.getFont().deriveFont(34.0f));
+		JLabel slogan = new JLabel("<html><span style='color: #1E90FF;text-align:center'>This tool has the capability of Test Data"
+				+ " Extraction from large XML files with mininum amount of time. <br>It can also ensure the correctness of data by comparing"
+				+ "both PDG & JUICE XMLs and extract only valid data. <br>And finally it can extract relevant Client information "
+				+ "from RSL file for loading into T2 Database</span></html>");
+		panelTitle = new JPanel();
+		panelTitle.setLayout(new BoxLayout(panelTitle, BoxLayout.Y_AXIS));
+		panelTitle.setAlignmentY(2);
+		panelTitle.add(title);
+		JLabel slogan_down = new JLabel("<html><span style='color: teal;'>Developed by: Infosys Testing Team</span></html>");
 
 		lblJuiceInputXML = new JLabel("JUICE Input XML:");
 		fieldInputJUICE = new JTextField(40);
@@ -120,6 +134,10 @@ public class UIClass implements ActionListener {
 		
 		panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+		panel.add(panelTitle);
+		panel.add(Box.createRigidArea(new Dimension(0, 10)));
+		panel.add(slogan);
+		panel.add(Box.createRigidArea(new Dimension(0, 10)));
 		panel.add(panelInputXML);
 		panel.add(Box.createRigidArea(new Dimension(0, 10)));
 		panel.add(chkPDG);
@@ -137,6 +155,8 @@ public class UIClass implements ActionListener {
 		panel.add(progressBar);
 		panel.add(Box.createRigidArea(new Dimension(0, 10)));
 		panel.add(panelResult);
+		panel.add(Box.createRigidArea(new Dimension(0, 40)));
+		panel.add(slogan_down);
 		panel.add(Box.createRigidArea(new Dimension(0, 10)));
 		
 	
